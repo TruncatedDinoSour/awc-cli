@@ -12,7 +12,7 @@ import awc.sql.helpers
 import pypika.queries  # type: ignore
 import sqlparse  # type: ignore
 
-from ..util import run_sql
+from ..util import err, run_sql
 from . import Command
 from .mgr import CommandManager
 
@@ -128,5 +128,26 @@ def reject(api: awc.Awc, cmd: Command) -> int:
     )
 
     print(f"rejected user's {cmd.cmd!r} application")
+
+    return 0
+
+
+@ADMIN_CMDS.new
+@ADMIN_CMDS.nonempty
+def censor(api: awc.Awc, cmd: Command) -> int:
+    """censor a comment
+    usage : censor <id>"""
+
+    try:
+        cid: int = int(cmd.cmd)
+    except ValueError:
+        return err("not a valid comment ID")
+
+    run_sql(
+        api,
+        awc.sql.helpers.censor_comments(awc.sql.Comment.cid == cid),  # type: ignore
+    )
+
+    print(f"censored #{cid}")
 
     return 0
