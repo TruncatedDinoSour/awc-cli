@@ -151,3 +151,34 @@ def censor(api: awc.Awc, cmd: Command) -> int:
     print(f"censored #{cid}")
 
     return 0
+
+
+@ADMIN_CMDS.new
+@ADMIN_CMDS.nonempty
+def edit(api: awc.Awc, cmd: Command) -> int:
+    """edit a comment
+    usage : edit <id> <content>"""
+
+    try:
+        cid: int = int(cmd.next() or "")
+    except ValueError:
+        return err("not a valid comment ID")
+
+    if not cmd.cmd:
+        return err("no new content")
+
+    run_sql(
+        api,
+        [
+            awc.sql.Comment.set(
+                awc.sql.Comment.cid == cid,  # type: ignore
+                {
+                    awc.sql.Comment.content: cmd.cmd,
+                },
+            )
+        ],
+    )
+
+    print(f"edited #{cid}")
+
+    return 0
