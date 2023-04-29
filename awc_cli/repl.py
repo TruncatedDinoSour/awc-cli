@@ -39,11 +39,8 @@ got {e.response.status_code} : {e.response.text!r}"
         return 0 if msg is None else err(msg)
 
 
-def repl(api: awc.Awc) -> int:
-    """the repl main"""
-
-    last: int = 0
-    user: typing.Optional[str]
+def repl_shell(user: str, api: awc.Awc) -> int:
+    """main repl shell"""
 
     try:
         import readline
@@ -52,26 +49,7 @@ def repl(api: awc.Awc) -> int:
     except Exception:
         pass
 
-    try:
-        user = awc.api.whoami(api)
-    except awc.exc.APIRequestFailedError:
-        if awc.api.applied(api):
-            if (user := accept_application(api)) is None:
-                return err("please wait for your application to get accepted")
-        else:
-            print("please apply")
-
-            try:
-                awc.api.apply(
-                    api,
-                    (user := awc_input("username")),
-                    awc_input("why do you want to apply"),
-                )
-            except EOFError:
-                return 2
-
-            if accept_application(api, user) is None:
-                return err("cannot accept your application, wait for your acceptance")
+    last: int = 0
 
     print("type `help` for help, press CTRL + D or type `.exit` to exit")
 
@@ -94,3 +72,36 @@ def repl(api: awc.Awc) -> int:
         last = run_cmd_fn(cfn, api, cmd)
 
     return last
+
+
+def repl(api: awc.Awc) -> int:
+    """the repl main"""
+
+    user: typing.Optional[str]
+
+    try:
+        user = awc.api.whoami(api)
+    except awc.exc.APIRequestFailedError:
+        if awc_input("do you want to apply [Y/n]").lower().startswith("n"):
+            print("not applying, some functions might not work")
+            return repl_shell("#", api)
+
+        if awc.api.applied(api):
+            if (user := accept_application(api)) is None:
+                return err("please wait for your application to get accepted")
+        else:
+            print("please apply")
+
+            try:
+                awc.api.apply(
+                    api,
+                    (user := awc_input("username")),
+                    awc_input("why do you want to apply"),
+                )
+            except EOFError:
+                return 2
+
+            if accept_application(api, user) is None:
+                return err("cannot accept your application, wait for your acceptance")
+
+    return repl_shell(user, api)
