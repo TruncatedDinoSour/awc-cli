@@ -182,3 +182,43 @@ def edit(api: awc.Awc, cmd: Command) -> int:
     print(f"edited #{cid}")
 
     return 0
+
+
+@ADMIN_CMDS.new
+def getanon(api: awc.Awc, *_: typing.Any) -> int:
+    """get anonymous messages
+    usage : getanon"""
+
+    for row in awc.api.sql(api, awc.sql.sql(awc.sql.AnonMsg.all()))[0]:
+        print(
+            f"""id : {row[0]}
+content : {row[1]}
+"""
+        )
+
+    return 0
+
+
+@ADMIN_CMDS.new
+@ADMIN_CMDS.nonempty
+def delanon(api: awc.Awc, cmd: Command) -> int:
+    """delete anonymous message
+    usage : delanon <id>"""
+
+    try:
+        cid: int = int(cmd.next() or "")
+    except ValueError:
+        return err("not a valid content ID")
+
+    awc.api.sql(
+        api,
+        awc.sql.sql(
+            awc.sql.delete(
+                awc.sql.AnonMsg.query(awc.sql.AnonMsg.cid == cid)  # type: ignore
+            )
+        ),
+    )
+
+    print(f"deleted anonymous message #{cid}")
+
+    return 0

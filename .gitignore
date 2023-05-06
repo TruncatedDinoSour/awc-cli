@@ -167,3 +167,5 @@ cython_debug/
 !py.typed
 .pytest_cache/
 .tox/
+
+local.env

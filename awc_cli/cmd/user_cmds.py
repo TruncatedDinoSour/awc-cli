@@ -106,3 +106,13 @@ def apikey(api: awc.Awc, cmd: Command) -> int:
 
     api.api_key = cmd.cmd or None
     return 0
+
+
+@USER_CMDS.new
+@USER_CMDS.nonempty
+def anon(api: awc.Awc, cmd: Command) -> int:
+    """post an anonymous message
+    usage : anon <message>"""
+
+    print("posted anonymous message with id", awc.api.anon(api, cmd.cmd).text)
+    return 0
