@@ -191,8 +191,9 @@ def getanon(api: awc.Awc, *_: typing.Any) -> int:
 
     for row in awc.api.sql(api, awc.sql.sql(awc.sql.AnonMsg.all()))[0]:
         print(
-            f"""id : {row[0]}
+            f"""ip : {row[0]}
 content : {row[1]}
+headers : {row[2][:30]!r} ...
 """
         )
 
@@ -201,24 +202,39 @@ content : {row[1]}
 
 @ADMIN_CMDS.new
 @ADMIN_CMDS.nonempty
+def getanonh(api: awc.Awc, cmd: Command) -> int:
+    """get anonymous message headers
+    usage : getanonh <ip>"""
+
+    for h in awc.api.sql(
+        api,
+        awc.sql.sql(
+            awc.sql.AnonMsg.select(
+                awc.sql.AnonMsg.cid == cmd.cmd,  # type: ignore
+                awc.sql.AnonMsg.headers,  # type: ignore
+            )
+        ),
+    )[0]:
+        print(*h)
+
+    return 0
+
+
+@ADMIN_CMDS.new
+@ADMIN_CMDS.nonempty
 def delanon(api: awc.Awc, cmd: Command) -> int:
     """delete anonymous message
-    usage : delanon <id>"""
-
-    try:
-        cid: int = int(cmd.next() or "")
-    except ValueError:
-        return err("not a valid content ID")
+    usage : delanon <ip>"""
 
     awc.api.sql(
         api,
         awc.sql.sql(
             awc.sql.delete(
-                awc.sql.AnonMsg.query(awc.sql.AnonMsg.cid == cid)  # type: ignore
+                awc.sql.AnonMsg.query(awc.sql.AnonMsg.cid == cmd.cmd)  # type: ignore
             )
         ),
     )
 
-    print(f"deleted anonymous message #{cid}")
+    print(f"deleted anonymous message from {cmd.cmd!r}")
 
     return 0

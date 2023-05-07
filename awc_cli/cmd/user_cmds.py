@@ -114,5 +114,5 @@ def anon(api: awc.Awc, cmd: Command) -> int:
     """post an anonymous message
     usage : anon <message>"""
 
-    print("posted anonymous message with id", awc.api.anon(api, cmd.cmd).text)
+    print(awc.api.anon(api, cmd.cmd))
     return 0
