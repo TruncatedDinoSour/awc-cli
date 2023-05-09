@@ -193,7 +193,6 @@ def getanon(api: awc.Awc, *_: typing.Any) -> int:
         print(
             f"""ip : {row[0]}
 content : {row[1]}
-headers : {row[2][:30]!r} ...
 """
         )
 
@@ -202,39 +201,19 @@ headers : {row[2][:30]!r} ...
 
 @ADMIN_CMDS.new
 @ADMIN_CMDS.nonempty
-def getanonh(api: awc.Awc, cmd: Command) -> int:
-    """get anonymous message headers
-    usage : getanonh <ip>"""
-
-    for h in awc.api.sql(
-        api,
-        awc.sql.sql(
-            awc.sql.AnonMsg.select(
-                awc.sql.AnonMsg.cid == cmd.cmd,  # type: ignore
-                awc.sql.AnonMsg.headers,  # type: ignore
-            )
-        ),
-    )[0]:
-        print(*h)
-
-    return 0
-
-
-@ADMIN_CMDS.new
-@ADMIN_CMDS.nonempty
 def delanon(api: awc.Awc, cmd: Command) -> int:
     """delete anonymous message
-    usage : delanon <ip>"""
+    usage : delanon <ip hash>"""
 
     awc.api.sql(
         api,
         awc.sql.sql(
             awc.sql.delete(
-                awc.sql.AnonMsg.query(awc.sql.AnonMsg.cid == cmd.cmd)  # type: ignore
+                awc.sql.AnonMsg.query(awc.sql.AnonMsg.ip == cmd.cmd)  # type: ignore
             )
         ),
     )
 
-    print(f"deleted anonymous message from {cmd.cmd!r}")
+    print(f"deleted anonymous message from ip {cmd.cmd!r}")
 
     return 0
