@@ -5,6 +5,7 @@
 from warnings import filterwarnings as filter_warnings
 
 import awc
+import awc.api
 
 from .config import INSTANCE, KEY
 from .repl import repl
@@ -13,8 +14,9 @@ from .repl import repl
 def main() -> int:
     """entry / main function"""
 
-    with awc.Awc(INSTANCE, KEY) as api:
-        return repl(api)
+    with awc.Awc(INSTANCE, KEY) as awc_api:
+        awc.api.visit(awc_api)
+        return repl(awc_api)
 
 
 if __name__ == "__main__":

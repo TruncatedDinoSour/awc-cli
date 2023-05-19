@@ -7,6 +7,7 @@ import typing
 import awc
 import awc.api
 import awc.exc
+import lxml.etree as etree  # type: ignore
 
 from ..config import ADMIN_CLR
 from ..util import err
@@ -115,4 +116,18 @@ def anon(api: awc.Awc, cmd: Command) -> int:
     usage : anon <message>"""
 
     print(awc.api.anon(api, cmd.cmd))
+    return 0
+
+
+@USER_CMDS.new
+def visits(api: awc.Awc, *_: typing.Any) -> int:
+    """get visit count
+    usage : visits"""
+
+    print(
+        etree.fromstring(awc.api.visit(api))  # type: ignore
+        .xpath("//svg:text", namespaces={"svg": "http://www.w3.org/2000/svg"})[0]
+        .text
+    )
+
     return 0
