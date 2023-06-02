@@ -51,14 +51,22 @@ def repl_shell(user: str, api: awc.Awc) -> int:
 
     last: int = 0
 
-    print("type `help` for help, press CTRL + D or type `.exit` to exit")
+    print(
+        "type `help` for help, press CTRL + D or type `.exit` to exit,"
+        " you can use escapes like \\n in command input"
+    )
 
     while True:
         try:
             print()
             cmd: Command = Command(
                 awc_input(f"[{last}] {user}@{api.instance.host}")  # type: ignore
+                .encode()
+                .decode("unicode_escape")
             )
+        except UnicodeError as ue:
+            last = err(str(ue))
+            continue
         except EOFError:
             break
 
@@ -66,7 +74,7 @@ def repl_shell(user: str, api: awc.Awc) -> int:
             break
 
         if (cfn := CMGR.get((cname := cmd.next()))) is None:
-            last = err(f"{cname} -- command not found")
+            last = err(f"{cname!r} -- command not found")
             continue
 
         last = run_cmd_fn(cfn, api, cmd)
